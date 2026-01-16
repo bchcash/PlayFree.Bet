@@ -1,15 +1,12 @@
 name: Deploy Go API & React SPA
 
-# This workflow deploys pre-built binaries and frontend assets
-# Build should be done locally before pushing to main branch
-
 on:
   push:
     branches: [main]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # GitHub-hosted runner
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -20,22 +17,29 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Add SSH Host Key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          cat ~/.ssh/known_hosts  # Для отладки (необязательно)
+
       # --- Deploy Files ---
       - name: Deploy Go API
         run: |
           echo "Deploying Go API..."
-
+          
           # Останавливаем сервис перед деплоем
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl stop freebet-api || true"
-
+          
           # Копируем бинарник (собранный локально или из кэша)
           scp freebet-api/freebet-api ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/freebet-api/ || echo "No Go binary found"
-
+          
           # Копируем .env если существует
           if [ -f "freebet-api/.env" ]; then
             scp freebet-api/.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/freebet-api/
           fi
-
+          
           # Устанавливаем права
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chmod +x /var/www/freebet-api/freebet-api"
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chown www-data:www-data /var/www/freebet-api/freebet-api"
