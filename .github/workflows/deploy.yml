@@ -1,0 +1,100 @@
+name: Deploy Go API & React SPA
+
+# This workflow deploys pre-built binaries and frontend assets
+# Build should be done locally before pushing to main branch
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # GitHub-hosted runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # --- Deploy Files ---
+      - name: Deploy Go API
+        run: |
+          echo "Deploying Go API..."
+
+          # Останавливаем сервис перед деплоем
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl stop freebet-api || true"
+
+          # Копируем бинарник (собранный локально или из кэша)
+          scp freebet-api/freebet-api ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/freebet-api/ || echo "No Go binary found"
+
+          # Копируем .env если существует
+          if [ -f "freebet-api/.env" ]; then
+            scp freebet-api/.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/freebet-api/
+          fi
+
+          # Устанавливаем права
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chmod +x /var/www/freebet-api/freebet-api"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chown www-data:www-data /var/www/freebet-api/freebet-api"
+
+      - name: Deploy Frontend
+        run: |
+          echo "Deploying Frontend..."
+
+          # Проверяем наличие собранного фронтенда
+          if [ -d "freebet-app/dist" ]; then
+            # Создаем tar архив
+            tar -czf frontend.tar.gz -C freebet-app/dist .
+
+            # Передаем на сервер и распаковываем
+            scp frontend.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo rm -rf /var/www/freebet-app/* && sudo tar -xzf /tmp/frontend.tar.gz -C /var/www/freebet-app/ && sudo rm /tmp/frontend.tar.gz"
+
+            # Удаляем локальный архив
+            rm frontend.tar.gz
+          else
+            echo "Frontend build directory not found: freebet-app/dist"
+            echo "Skipping frontend deployment"
+          fi
+
+      - name: Deploy Config Files
+        run: |
+          echo "Uploading config files..."
+
+          if [ -f "freebet-config/freebet-api.service" ]; then
+            scp freebet-config/freebet-api.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/freebet-api.service
+          else
+            echo "Warning: freebet-api.service not found"
+          fi
+
+          if [ -f "freebet-config/freebet-nginx.conf" ]; then
+            scp freebet-config/freebet-nginx.conf ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/freebet-nginx.conf
+          else
+            echo "Warning: freebet-nginx.conf not found"
+          fi
+
+      # --- Configure and restart services ---
+      - name: Configure Server
+        run: |
+          echo "Configuring services..."
+
+          # Конфигурация nginx
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "if [ -f /tmp/freebet-nginx.conf ]; then sudo cp /tmp/freebet-nginx.conf /etc/nginx/nginx.conf && sudo nginx -t && sudo systemctl reload nginx; fi"
+
+          # Конфигурация systemd service
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "if [ -f /tmp/freebet-api.service ]; then sudo cp /tmp/freebet-api.service /etc/systemd/system/freebet-api.service && sudo systemctl daemon-reload; fi"
+
+          # Запуск сервиса
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl enable freebet-api --now"
+
+          # Очистка
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "rm -f /tmp/freebet-nginx.conf /tmp/freebet-api.service"
+
+          # Проверка статуса
+          echo "Checking service status..."
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl status freebet-api --no-pager"
+
+          echo "✅ Deployment completed successfully!"

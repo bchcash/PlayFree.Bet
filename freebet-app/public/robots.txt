@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /leaderboard
+Allow: /dashboard
+Allow: /player/
+
+# Sitemap
+Sitemap: https://freebet.guru/sitemap.xml

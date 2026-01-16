@@ -1,0 +1,172 @@
+# PlayFree.Bet - Environment Variables Configuration
+# Copy this file to .env and fill in your actual values
+# DO NOT commit .env file to version control
+
+# =================================================================================
+# SERVER CONFIGURATION
+# =================================================================================
+
+# Server port (default: 3001)
+API_PORT=3001
+
+# Environment: development, production, staging
+NODE_ENV=development
+
+# Logging level: DEBUG, INFO, WARN, ERROR
+LOG_LEVEL=INFO
+
+# =================================================================================
+# DATABASE CONFIGURATION
+# =================================================================================
+
+# PostgreSQL database connection URL
+# Format: postgres://username:password@host:port/database?sslmode=require
+DATABASE_URL=postgres://username:password@localhost:5432/freebet_db
+
+# Alternative external database URL (for cloud databases)
+EXTERNAL_DATABASE_URL=
+
+# Database connection pool settings
+DB_MAX_CONNS=10
+DB_MIN_CONNS=1
+DB_MAX_LIFETIME=3600
+DB_MAX_IDLE_TIME=1800
+
+# =================================================================================
+# AUTHENTICATION & SECURITY
+# =================================================================================
+
+# JWT Secret Key - MUST BE CHANGED IN PRODUCTION
+# Generate a secure random string: openssl rand -hex 32
+JWT_SECRET=your-super-secret-jwt-key-change-in-production-32-chars-minimum
+
+# JWT Token Time-to-Live
+JWT_ACCESS_TOKEN_TTL=15m
+JWT_REFRESH_TOKEN_TTL=168h
+
+# Cookie settings for refresh tokens
+COOKIE_NAME=refresh_token
+COOKIE_SECURE=false
+COOKIE_HTTP_ONLY=true
+COOKIE_SAME_SITE=strict
+
+# Password hashing cost (bcrypt rounds)
+BCRYPT_COST=12
+
+# Minimum password length
+MIN_PASSWORD_LENGTH=6
+
+# =================================================================================
+# GAME/BUSINESS LOGIC
+# =================================================================================
+
+# Starting balance for new users ($)
+INITIAL_BALANCE=10000.00
+
+# Top-up amount ($)
+TOPUP_AMOUNT=10000.00
+
+# Maximum balance allowed for top-up ($)
+MAX_TOPUP_BALANCE=500.00
+
+# Betting limits ($)
+MIN_BET_AMOUNT=1.00
+MAX_BET_AMOUNT=100000.00
+
+# =================================================================================
+# CORS CONFIGURATION
+# =================================================================================
+
+# Allowed origins for CORS (comma-separated)
+# Examples: https://yourdomain.com,https://*.yourdomain.com,http://localhost:*
+CORS_ALLOWED_ORIGINS=http://localhost:*,https://*.freebet.guru,https://*.repl.co
+
+# Allow credentials in CORS requests
+CORS_CREDENTIALS=true
+
+# =================================================================================
+# PAGINATION SETTINGS
+# =================================================================================
+
+# Default and maximum limits for API pagination
+PAGINATION_DEFAULT_LIMIT=50
+PAGINATION_MAX_LIMIT=100
+
+# =================================================================================
+# SERVER TIMEOUTS (seconds)
+# =================================================================================
+
+READ_TIMEOUT=15
+WRITE_TIMEOUT=15
+IDLE_TIMEOUT=60
+
+# =================================================================================
+# RATE LIMITING
+# =================================================================================
+
+# Requests per time window
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_WINDOW=60
+
+# =================================================================================
+# SECURITY HEADERS
+# =================================================================================
+
+# HSTS (HTTP Strict Transport Security) max age in seconds
+HSTS_MAX_AGE=31536000
+
+# =================================================================================
+# EXTERNAL APIs
+# =================================================================================
+
+# Odds API Configuration (for live sports data)
+# Get your API key from: https://the-odds-api.com/
+ODDS_API_KEY=your-odds-api-key-here
+
+# =================================================================================
+# GOOGLE OAUTH CONFIGURATION
+# =================================================================================
+
+# Google OAuth 2.0 Credentials
+# Get from: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URL=http://localhost:3001/api/auth/google/callback
+
+# =================================================================================
+# TELEGRAM INTEGRATION (Optional)
+# =================================================================================
+
+# Telegram Bot Token (from @BotFather)
+TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz123456789
+
+# Telegram Channel ID for notifications
+TELEGRAM_CHANNEL_ID=@your_channel_username
+
+# =================================================================================
+# CLOUDFLARE CONFIGURATION (Optional)
+# =================================================================================
+
+# Cloudflare API Token for DNS management
+CF_API_TOKEN=your-cloudflare-api-token
+
+# Cloudflare Zone ID for your domain
+CF_ZONE_ID=your-cloudflare-zone-id
+
+# =================================================================================
+# DEVELOPMENT NOTES
+# =================================================================================
+
+# 1. Copy this file to .env: cp .env.example .env
+# 2. Fill in your actual values
+# 3. Never commit .env file to version control
+# 4. Use strong, unique secrets for production
+# 5. Test configuration locally before deploying
+
+# For production deployment:
+# - Set NODE_ENV=production
+# - Use HTTPS URLs
+# - Set COOKIE_SECURE=true
+# - Use strong JWT_SECRET and database credentials
+# - Configure proper CORS origins
+# - Set up monitoring and logging

@@ -1,0 +1,17 @@
+[Unit]
+Description=FreeBet.guru Go API Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/freebet-api/
+EnvironmentFile=/var/www/freebet-api/.env
+ExecStart=/var/www/freebet-api/freebet-api
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
