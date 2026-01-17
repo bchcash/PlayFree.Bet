@@ -60,15 +60,6 @@ export function HelmetManager({
       };
     }
 
-    if (path === '/dashboard') {
-      return {
-        title: "Dashboard - My Bets | FreeBet Guru",
-        description: "Access your personal betting dashboard on FreeBet Guru. View your betting history, balance, profit/loss, and manage your virtual betting account.",
-        keywords: `${baseKeywords}, betting dashboard, my bets, account balance, profit loss, betting history`,
-        image: baseImage,
-        url: baseUrl
-      };
-    }
 
     // Для неизвестных маршрутов возвращаем базовые мета-теги
     return {

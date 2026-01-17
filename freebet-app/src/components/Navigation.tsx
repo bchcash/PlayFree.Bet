@@ -375,7 +375,6 @@ export function Navigation() {
 
   const navItems = [
     { label: "Matches", href: "/", icon: CalendarDays },
-    { label: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
   ];
 

@@ -11,12 +11,10 @@ import { HelmetManager } from "@/components/HelmetManager";
 const Home = lazy(() => import("@/pages/Home"));
 const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
 const PlayerBets = lazy(() => import("@/pages/PlayerBets"));
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Preload critical components
 const preloadLeaderboard = () => import("@/pages/Leaderboard");
-const preloadDashboard = () => import("@/pages/Dashboard");
 
 // Loading component
 const LoadingFallback = () => (
@@ -38,7 +36,6 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/player/:nickname" component={PlayerBets} />
-        <Route path="/dashboard" component={Dashboard} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
@@ -50,7 +47,6 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       preloadLeaderboard();
-      preloadDashboard();
     }, 2000); // Delay 2 seconds to not block initial loading
 
     return () => clearTimeout(timer);

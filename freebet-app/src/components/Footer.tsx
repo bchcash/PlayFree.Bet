@@ -44,7 +44,6 @@ export function Footer() {
 
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-sm font-medium text-muted-foreground">
             <Link href="/" className="hover:text-primary transition-colors hover:underline decoration-primary/30 underline-offset-4">Matches</Link>
-            <Link href="/dashboard" className="hover:text-primary transition-colors hover:underline decoration-primary/30 underline-offset-4">Dashboard</Link>
             <Link href="/leaderboard" className="hover:text-primary transition-colors hover:underline decoration-primary/30 underline-offset-4">Leaderboard</Link>
           </div>
 

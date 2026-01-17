@@ -2,21 +2,22 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { PlayerCard } from "@/components/PlayerCard";
 import { HelmetManager } from "@/components/HelmetManager";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
-import { ArrowUpDown, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowUpDown, ChevronLeft, ChevronRight, Loader2, Users, Wallet, TrendingUp, TrendingDown, Zap, User as UserIcon, Activity, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 
 interface Player {
@@ -45,6 +46,92 @@ interface PlayersResponse {
 
 type SortKey = "rank" | "balance" | "bets" | "winRate" | "avgOdds" | "topUps" | "pnl" | "registeredAt";
 
+interface CommunityStats {
+  highestBalance: { value: number; player: string };
+  bestWinRate: { value: number; player: string };
+  lowestPnl: { value: number; player: string };
+  highestPnl: { value: number; player: string };
+  totalPlayers: number;
+  totalMatches: number;
+  totalBets: number;
+}
+
+function useCommunityStats() {
+  return useQuery({
+    queryKey: ["community-stats"],
+    queryFn: async () => {
+      const accessToken = localStorage.getItem('access_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      const [playersRes, matchesRes] = await Promise.all([
+        fetch("/api/players", { headers, credentials: "include" }),
+        fetch("/api/matches", { headers, credentials: "include" })
+      ]);
+
+      const playersData = await playersRes.json();
+      const matchesData = await matchesRes.json();
+
+      const players = playersData.success ? playersData.players : [];
+      const matches = matchesData.success ? matchesData.matches : [];
+
+      let stats: CommunityStats = {
+        highestBalance: { value: 0, player: "-" },
+        bestWinRate: { value: 0, player: "-" },
+        lowestPnl: { value: 0, player: "-" },
+        highestPnl: { value: 0, player: "-" },
+        totalPlayers: players.length,
+        totalMatches: matches.length,
+        totalBets: 0
+      };
+
+      if (players.length > 0) {
+        let totalBets = 0;
+        let highestBalance = { value: -Infinity, player: "" };
+        let bestWinRate = { value: -Infinity, player: "" };
+        let lowestPnl = { value: Infinity, player: "" };
+        let highestPnl = { value: -Infinity, player: "" };
+
+        for (const p of players) {
+          totalBets += p.bets || 0;
+          const pnl = p.money - (p.topup * 10000);
+          const winRate = p.settled_bets > 0 ? (p.won_bets / p.settled_bets) * 100 : 0;
+
+          if (p.money > highestBalance.value) {
+            highestBalance = { value: p.money, player: p.nickname };
+          }
+          if (winRate > bestWinRate.value && p.settled_bets > 0) {
+            bestWinRate = { value: winRate, player: p.nickname };
+          }
+          if (pnl < lowestPnl.value) {
+            lowestPnl = { value: pnl, player: p.nickname };
+          }
+          if (pnl > highestPnl.value) {
+            highestPnl = { value: pnl, player: p.nickname };
+          }
+        }
+
+        stats = {
+          ...stats,
+          highestBalance,
+          bestWinRate,
+          lowestPnl,
+          highestPnl,
+          totalBets
+        };
+      }
+
+      return stats;
+    },
+    staleTime: 30000,
+  });
+}
+
 export default function Leaderboard() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +139,8 @@ export default function Leaderboard() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' } | null>({ key: 'pnl', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const { data: communityStats, isLoading: statsLoading } = useCommunityStats();
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -164,19 +253,115 @@ export default function Leaderboard() {
       
       <main className="flex-1 py-12 md:py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-12"
           >
-            <h1 className="text-3xl lg:text-4xl font-display font-bold tracking-tight text-foreground mb-4">
+            <h1 className="text-4xl font-display font-bold tracking-tight text-foreground mb-2">
               Leaderboard
             </h1>
-            <p className="text-muted-foreground max-w-2xl mb-8">
+            <p className="text-muted-foreground max-w-2xl">
               Top performers in our betting community.
             </p>
           </motion.div>
+
+          {/* Community Statistics */}
+          <section className="space-y-8 mb-16">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Users className="size-6 text-primary" />
+              </div>
+              <h2 className="text-2xl font-black font-display tracking-tight uppercase">Community Statistics</h2>
+            </div>
+
+            {statsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="p-6 rounded-2xl bg-card/50 animate-pulse h-32" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  label="Highest Balance"
+                  value={`${(communityStats?.highestBalance.value ?? 0).toLocaleString()}`}
+                  subtext={communityStats?.highestBalance.player || "-"}
+                  icon={<Wallet className="size-32" />}
+                />
+                <StatCard
+                  label="Best Win Rate"
+                  value={`${(communityStats?.bestWinRate.value && communityStats.bestWinRate.value !== -Infinity ? communityStats.bestWinRate.value : 0).toFixed(1)}%`}
+                  subtext={communityStats?.bestWinRate.player || "-"}
+                  icon={<Zap className="size-32" />}
+                />
+                <StatCard
+                  label="Lowest PnL"
+                  value={(communityStats?.lowestPnl.value && communityStats.lowestPnl.value !== Infinity ? communityStats.lowestPnl.value : 0).toLocaleString()}
+                  subtext={communityStats?.lowestPnl.player || "-"}
+                  icon={<TrendingDown className="size-32" />}
+                />
+                <StatCard
+                  label="Highest PnL"
+                  value={(communityStats?.highestPnl.value && communityStats.highestPnl.value !== -Infinity ? communityStats.highestPnl.value : 0).toLocaleString()}
+                  subtext={communityStats?.highestPnl.player || "-"}
+                  icon={<TrendingUp className="size-32" />}
+                />
+              </div>
+            )}
+          </section>
+
+          {/* Platform Overview */}
+          <motion.section
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="space-y-8 mb-16"
+          >
+            <div className="flex items-center gap-3 px-2">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Activity className="size-6 text-primary" />
+              </div>
+              <h2 className="text-2xl font-black font-display tracking-tight uppercase">Platform Overview</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Link href="/leaderboard">
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="flex flex-col items-center justify-center text-center p-12 bg-primary/5 rounded-3xl border border-primary/10 shadow-xl relative overflow-hidden cursor-pointer"
+                >
+                  <div className="absolute top-4 right-4">
+                    <ArrowUpRight className="size-5 text-primary/40 group-hover:text-primary transition-colors" />
+                  </div>
+                  <span className="text-8xl font-light text-primary tracking-tighter mb-2">{communityStats?.totalPlayers || 0}</span>
+                  <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary/60">Active Players</span>
+                </motion.div>
+              </Link>
+
+              <Link href="/">
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="flex flex-col items-center justify-center text-center p-12 bg-primary/10 rounded-3xl border border-primary/20 shadow-xl relative overflow-hidden cursor-pointer"
+                >
+                  <div className="absolute top-4 right-4">
+                    <ArrowUpRight className="size-5 text-primary/40 group-hover:text-primary transition-colors" />
+                  </div>
+                  <span className="text-8xl font-light text-primary tracking-tighter mb-2">{communityStats?.totalMatches || 0}</span>
+                  <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary/70">Available Matches</span>
+                </motion.div>
+              </Link>
+
+              <motion.div
+                whileHover={{ y: -5, scale: 1.02 }}
+                className="flex flex-col items-center justify-center text-center p-12 bg-primary/20 rounded-3xl border border-primary/30 shadow-xl"
+              >
+                <span className="text-8xl font-light text-primary tracking-tighter mb-2">{communityStats?.totalBets || 0}</span>
+                <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">Total Bets</span>
+              </motion.div>
+            </div>
+          </motion.section>
 
           {paginatedData.length === 0 ? (
             <div className="bg-muted/50 border border-border/50 rounded-2xl p-12 text-center">
@@ -346,5 +531,26 @@ export default function Leaderboard() {
       <Footer />
     </div>
     </>
+  );
+}
+
+function StatCard({ label, value, subtext, icon }: { label: string, value: string, subtext: string, icon: React.ReactNode }) {
+  return (
+    <motion.div
+      whileHover={{ y: -5, scale: 1.02 }}
+      className="p-6 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm flex items-center justify-between shadow-lg overflow-hidden relative group"
+    >
+      <div className="flex flex-col relative z-10">
+        <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mb-1">{label}</span>
+        <span className="text-3xl font-extrabold text-foreground tracking-tight">{value}</span>
+        <div className="flex items-center gap-1.5 text-muted-foreground/80 mt-1">
+          <UserIcon className="size-3" />
+          <span className="text-[11px] font-medium">{subtext}</span>
+        </div>
+      </div>
+      <div className="absolute -right-2 -bottom-8 text-primary/5 group-hover:text-primary/10 transition-all duration-500 rotate-12 pointer-events-none">
+        {icon}
+      </div>
+    </motion.div>
   );
 }
