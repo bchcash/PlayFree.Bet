@@ -13,10 +13,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
-import { ArrowUpDown, ChevronLeft, ChevronRight, Loader2, Users, Wallet, TrendingUp, TrendingDown, Zap, User as UserIcon, Activity, ArrowUpRight } from "lucide-react";
+import { ArrowUpDown, ChevronLeft, ChevronRight, Loader2, Users, Wallet, TrendingUp, TrendingDown, Zap, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
 
@@ -269,12 +268,6 @@ export default function Leaderboard() {
 
           {/* Community Statistics */}
           <section className="space-y-8 mb-16">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Users className="size-6 text-primary" />
-              </div>
-              <h2 className="text-2xl font-black font-display tracking-tight uppercase">Community Statistics</h2>
-            </div>
 
             {statsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -312,56 +305,6 @@ export default function Leaderboard() {
             )}
           </section>
 
-          {/* Platform Overview */}
-          <motion.section
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="space-y-8 mb-16"
-          >
-            <div className="flex items-center gap-3 px-2">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Activity className="size-6 text-primary" />
-              </div>
-              <h2 className="text-2xl font-black font-display tracking-tight uppercase">Platform Overview</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Link href="/leaderboard">
-                <motion.div
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="flex flex-col items-center justify-center text-center p-12 bg-primary/5 rounded-3xl border border-primary/10 shadow-xl relative overflow-hidden cursor-pointer"
-                >
-                  <div className="absolute top-4 right-4">
-                    <ArrowUpRight className="size-5 text-primary/40 group-hover:text-primary transition-colors" />
-                  </div>
-                  <span className="text-8xl font-light text-primary tracking-tighter mb-2">{communityStats?.totalPlayers || 0}</span>
-                  <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary/60">Active Players</span>
-                </motion.div>
-              </Link>
-
-              <Link href="/">
-                <motion.div
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="flex flex-col items-center justify-center text-center p-12 bg-primary/10 rounded-3xl border border-primary/20 shadow-xl relative overflow-hidden cursor-pointer"
-                >
-                  <div className="absolute top-4 right-4">
-                    <ArrowUpRight className="size-5 text-primary/40 group-hover:text-primary transition-colors" />
-                  </div>
-                  <span className="text-8xl font-light text-primary tracking-tighter mb-2">{communityStats?.totalMatches || 0}</span>
-                  <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary/70">Available Matches</span>
-                </motion.div>
-              </Link>
-
-              <motion.div
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="flex flex-col items-center justify-center text-center p-12 bg-primary/20 rounded-3xl border border-primary/30 shadow-xl"
-              >
-                <span className="text-8xl font-light text-primary tracking-tighter mb-2">{communityStats?.totalBets || 0}</span>
-                <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">Total Bets</span>
-              </motion.div>
-            </div>
-          </motion.section>
 
           {paginatedData.length === 0 ? (
             <div className="bg-muted/50 border border-border/50 rounded-2xl p-12 text-center">
