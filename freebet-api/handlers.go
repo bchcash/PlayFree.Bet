@@ -1278,6 +1278,8 @@ func (h *Handler) calcHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // AnalyticsHandler returns visitor statistics from Cloudflare Analytics API
+// Cloudflare Analytics handler - COMMENTED OUT
+/*
 func (h *Handler) analyticsHandler(w http.ResponseWriter, r *http.Request) {
 	h.logger.LogSystem("ANALYTICS", "Fetching visitor statistics")
 
@@ -1377,6 +1379,7 @@ func (h *Handler) analyticsHandler(w http.ResponseWriter, r *http.Request) {
 		"total_visitors": totalVisitors,
 	})
 }
+*/
 
 // getClientIP extracts the real client IP from request headers
 func (h *Handler) getClientIP(r *http.Request) string {

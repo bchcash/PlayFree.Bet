@@ -147,11 +147,11 @@ TELEGRAM_CHANNEL_ID=@your_channel_username
 # CLOUDFLARE CONFIGURATION (Optional)
 # =================================================================================
 
-# Cloudflare API Token for DNS management
-CF_API_TOKEN=your-cloudflare-api-token
+# Cloudflare API Token for DNS management (DISABLED)
+# CF_API_TOKEN=your-cloudflare-api-token
 
-# Cloudflare Zone ID for your domain
-CF_ZONE_ID=your-cloudflare-zone-id
+# Cloudflare Zone ID for your domain (DISABLED)
+# CF_ZONE_ID=your-cloudflare-zone-id
 
 # =================================================================================
 # DEVELOPMENT NOTES
