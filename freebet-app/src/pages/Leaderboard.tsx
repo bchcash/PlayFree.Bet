@@ -269,6 +269,7 @@ export default function Leaderboard() {
 
           {/* Community Statistics */}
           <section className="space-y-8 mb-16">
+            <h2 className="text-2xl font-display font-bold text-center mb-8">Top Bettor Statistics</h2>
 
             {statsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

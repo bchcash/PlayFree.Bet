@@ -19,7 +19,7 @@ export function HelmetManager({
   const [location] = useLocation();
 
   // Базовые настройки для сайта
-  const baseTitle = "FreeBet Guru - Virtual Betting Platform";
+  const baseTitle = "FreeBet Guru - Virtual Football Betting & Live Odds Platform";
   const baseDescription = "FreeBet Guru - The ultimate virtual betting platform featuring live odds updates, comprehensive player statistics, interactive leaderboard, and exciting football match betting. Join thousands of players in virtual sports betting!";
   const baseKeywords = "virtual betting, free bets, football betting, odds, bookmaker, sports betting, online gambling, freebet, bet, betting guru, bet on sports, gambling online, gambling guru, premier league, epl betting, epl odds";
   const baseImage = "https://freebet.guru/favicon.png";
@@ -31,7 +31,7 @@ export function HelmetManager({
 
     if (path === '/') {
       return {
-        title: "FreeBet Guru - Virtual Football Betting",
+        title: "FreeBet Guru - Virtual Football Betting & Live Odds",
         description: "Experience the ultimate virtual football betting platform! Place free bets on Premier League matches, track live odds in real-time, compete with players worldwide, and climb the leaderboard rankings.",
         keywords: `${baseKeywords}, virtual football betting, premier league betting, free football bets, soccer betting`,
         image: baseImage,
@@ -41,7 +41,7 @@ export function HelmetManager({
 
     if (path === '/leaderboard') {
       return {
-        title: "Leaderboard - Top Players | FreeBet Guru",
+        title: "Virtual Betting Leaderboard - Top Bettors & Statistics | FreeBet Guru",
         description: "Discover the elite virtual bettors on FreeBet Guru! Explore comprehensive player rankings, detailed win rate statistics, profit and loss analysis, and advanced betting performance metrics for all participants.",
         keywords: `${baseKeywords}, betting leaderboard, top bettors, player rankings, betting statistics, profit loss`,
         image: baseImage,

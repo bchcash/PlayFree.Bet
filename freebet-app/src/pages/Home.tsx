@@ -67,7 +67,7 @@ export default function Home() {
               2025/26 Season
             </span>
               <h1 className="text-4xl md:text-6xl font-display font-bold tracking-tight text-foreground mb-4 hover:text-primary transition-colors cursor-pointer">
-                Virtual Betting
+                Virtual Football Betting
               </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
               Play for fun, not for money. Our platform uses virtual currency to help you enjoy the game without financial risks and fight gambling addiction.
@@ -126,7 +126,7 @@ export default function Home() {
           >
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-display font-bold flex items-center gap-3">
-                Bet Now
+                Live Football Matches & Odds
                 <span className="relative flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
