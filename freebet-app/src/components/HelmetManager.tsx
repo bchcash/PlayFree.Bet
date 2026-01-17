@@ -60,6 +60,17 @@ export function HelmetManager({
       };
     }
 
+    // 404 Page
+    if (path === '/404' || (typeof window !== 'undefined' && window.location.pathname === '/404')) {
+      return {
+        title: "Page Not Found - 404 Error | FreeBet Guru",
+        description: "Oops! The page you're looking for doesn't exist on FreeBet Guru. Return to our virtual football betting platform to place bets and compete with other players.",
+        keywords: `${baseKeywords}, 404 error, page not found, error page`,
+        image: baseImage,
+        url: baseUrl
+      };
+    }
+
 
     // Для неизвестных маршрутов возвращаем базовые мета-теги
     return {

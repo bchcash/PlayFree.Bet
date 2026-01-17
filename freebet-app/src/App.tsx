@@ -36,6 +36,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/player/:nickname" component={PlayerBets} />
+        <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
