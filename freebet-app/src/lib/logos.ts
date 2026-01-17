@@ -20,7 +20,7 @@ export const teamLogos: Record<string, string> = {
   "Crystal Palace": "/images/teams/crystal-palace.webp",
   "Leeds United": "/images/teams/leeds-united.webp",
   "Burnley": "/images/teams/burnley.webp",
-  "Southampton": "/images/teams/southampton.webp"
+  "Sunderland": "/images/teams/sunderland.webp"
 };
 
 // Fallback mapping for browsers that don't support WebP
