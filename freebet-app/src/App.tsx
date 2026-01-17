@@ -5,7 +5,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { HelmetManager } from "@/components/HelmetManager";
 
 // Lazy loading page components for code splitting
 const Home = lazy(() => import("@/pages/Home"));
@@ -31,7 +30,6 @@ const LoadingFallback = () => (
 function Router() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <HelmetManager />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/leaderboard" component={Leaderboard} />

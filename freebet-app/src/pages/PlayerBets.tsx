@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { HelmetManager } from "@/components/HelmetManager";
 import { useQuery } from "@tanstack/react-query";
 import { Bet } from "@/types";
 import { format } from "date-fns";
@@ -296,6 +297,11 @@ export default function PlayerBets() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans selection:bg-primary/20">
+      <HelmetManager
+        title={`${player.nickname}'s Bets - Player Profile | FreeBet Guru`}
+        description={`View ${player.nickname}'s betting history, statistics, win rate, and performance on FreeBet Guru. Track player progress and betting patterns.`}
+        keywords="player profile, betting history, player statistics, win rate, betting performance, virtual betting, free bets, football betting"
+      />
       <Navigation />
       
       <main className="flex-1 py-12 md:py-20">
