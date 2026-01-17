@@ -16,6 +16,7 @@ import { useState, useMemo, useEffect } from "react";
 import { ArrowUpDown, ChevronLeft, ChevronRight, Loader2, Users, Wallet, TrendingUp, TrendingDown, Zap, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
 
