@@ -1,8 +1,23 @@
 User-agent: *
 Allow: /
 Allow: /leaderboard
-Allow: /dashboard
 Allow: /player/
+Allow: /404
+
+# Disallow admin and API paths
+Disallow: /api/
+Disallow: /admin/
+
+# Specific bot instructions
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Crawl delay for less important bots
+User-agent: *
+Crawl-delay: 1
 
 # Sitemap
 Sitemap: https://freebet.guru/sitemap.xml
