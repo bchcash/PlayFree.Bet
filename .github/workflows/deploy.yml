@@ -24,6 +24,39 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
           cat ~/.ssh/known_hosts  # Для отладки (необязательно)
 
+      # --- Build Projects ---
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Build Go API
+        run: |
+          echo "Building Go API..."
+          cd freebet-api
+          go mod download
+          go build -o freebet-api .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: freebet-app/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: |
+          echo "Installing frontend dependencies..."
+          cd freebet-app
+          npm ci
+
+      - name: Build Frontend
+        run: |
+          echo "Building frontend..."
+          cd freebet-app
+          npm run build
+
       # --- Deploy Files ---
       - name: Deploy Go API
         run: |
@@ -40,9 +73,12 @@ jobs:
             scp freebet-api/.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/freebet-api/
           fi
           
-          # Устанавливаем права
+          # Устанавливаем права (для AlmaLinux/RHEL)
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chmod +x /var/www/freebet-api/freebet-api"
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chown www-data:www-data /var/www/freebet-api/freebet-api"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chown nginx:nginx /var/www/freebet-api/freebet-api"
+
+          # Восстанавливаем SELinux контекст если SELinux включен
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo restorecon -Rv /var/www/freebet-api/ 2>/dev/null || true"
 
       - name: Deploy Frontend
         run: |
@@ -56,6 +92,13 @@ jobs:
             # Передаем на сервер и распаковываем
             scp frontend.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/
             ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo rm -rf /var/www/freebet-app/* && sudo tar -xzf /tmp/frontend.tar.gz -C /var/www/freebet-app/ && sudo rm /tmp/frontend.tar.gz"
+
+            # Устанавливаем правильные права для AlmaLinux/RHEL
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chown -R nginx:nginx /var/www/freebet-app/"
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chmod -R 755 /var/www/freebet-app/"
+
+            # Восстанавливаем SELinux контекст если SELinux включен
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo restorecon -Rv /var/www/freebet-app/ 2>/dev/null || true"
 
             # Удаляем локальный архив
             rm frontend.tar.gz
@@ -83,13 +126,20 @@ jobs:
       # --- Configure and restart services ---
       - name: Configure Server
         run: |
-          echo "Configuring services..."
+          echo "Configuring services on AlmaLinux/RHEL..."
 
-          # Конфигурация nginx
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "if [ -f /tmp/freebet-nginx.conf ]; then sudo cp /tmp/freebet-nginx.conf /etc/nginx/nginx.conf && sudo nginx -t && sudo systemctl reload nginx; fi"
+          # Проверяем дистрибутив
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat /etc/os-release | head -5"
+
+          # Конфигурация nginx (AlmaLinux/RHEL)
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "if [ -f /tmp/freebet-nginx.conf ]; then sudo cp /tmp/freebet-nginx.conf /etc/nginx/nginx.conf && sudo nginx -t && sudo systemctl reload nginx || sudo systemctl restart nginx; fi"
 
           # Конфигурация systemd service
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "if [ -f /tmp/freebet-api.service ]; then sudo cp /tmp/freebet-api.service /etc/systemd/system/freebet-api.service && sudo systemctl daemon-reload; fi"
+
+          # Убеждаемся что директории существуют и имеют правильные права
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo mkdir -p /var/www/freebet-api /var/www/freebet-app"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo chown -R nginx:nginx /var/www/"
 
           # Запуск сервиса
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl enable freebet-api --now"
@@ -97,8 +147,15 @@ jobs:
           # Очистка
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "rm -f /tmp/freebet-nginx.conf /tmp/freebet-api.service"
 
-          # Проверка статуса
-          echo "Checking service status..."
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl status freebet-api --no-pager"
+          # Проверка статуса служб
+          echo "Checking services status..."
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl status freebet-api --no-pager -l"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl status nginx --no-pager"
 
-          echo "✅ Deployment completed successfully!"
+          # Проверка firewall (firewalld в AlmaLinux/RHEL)
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo firewall-cmd --list-all 2>/dev/null || echo 'Firewall check skipped'"
+
+          # Проверка открытых портов
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo netstat -tlnp | grep -E ':(80|443|3000)' || sudo ss -tlnp | grep -E ':(80|443|3000)'"
+
+          echo "✅ Deployment to AlmaLinux completed successfully!"
